@@ -49,6 +49,10 @@ class IPCMessage(_BaseIPCMessage):
     sender: str
 
 
+class IPCRouter:
+    pass
+
+
 def random_hex(_bytes: int = 16) -> str:
     return os.urandom(_bytes).hex()
 
@@ -60,10 +64,12 @@ class IPC:
         loop: Optional[AbstractEventLoop] = None,
         channel: str = "ipc:1",
         identity: Optional[str] = None,
+        error_handler: Optional[Callable[[Exception, JSON], None]] = None,
     ) -> None:
         self.redis = pool
         self.channel_address = channel
         self.identity = identity or random_hex()
+        self.error_handler = error_handler
         self.loop = loop or asyncio.get_running_loop()
         self.channel = None
         self.handlers: Dict[str, Handler] = {
@@ -75,6 +81,11 @@ class IPC:
         logger.info(
             f"Created an IPC instance with identity: {self.identity!r} and {len(self.handlers)} handlers"
         )
+
+    def add_router(self, router: IPCRouter) -> None:
+        for method in dir(router):
+            if method.startswith("handle_"):
+                self.handlers[method.replace("handle_", "")] = getattr(router, method)
 
     def add_handler(self, name: str, func: Handler) -> None:
         self.handlers[name] = func
@@ -165,9 +176,8 @@ class IPC:
         except asyncio.CancelledError:
             pass
         except Exception as e:
-            on_error = getattr(self, 'on_error', None)
-            if on_error is not None:
-                await on_error(e, message)
+            if self.error_handler is not None:
+                await self.error_handler(e, message)
             else:
                 raise e from None
 
