@@ -30,6 +30,7 @@ logger = logging.getLogger('redis-ipc')
 __all__ = (
     'JSON',
     'IPC',
+    'IPCRouter',
     'Handler',
 )
 
