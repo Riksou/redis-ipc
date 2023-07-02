@@ -65,7 +65,7 @@ class IPC:
         loop: Optional[AbstractEventLoop] = None,
         channel: str = "ipc:1",
         identity: Optional[str] = None,
-        error_handler: Optional[Callable[[Exception, JSON], None]] = None,
+        error_handler: Optional[Callable[[Exception, JSON], Coroutine[Any, Any, None]]] = None,
     ) -> None:
         self.redis = pool
         self.channel_address = channel
