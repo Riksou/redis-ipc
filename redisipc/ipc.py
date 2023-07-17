@@ -23,7 +23,7 @@ from typing import Any, Coroutine, Dict, Callable, List, Optional, TypedDict, Un
 import asyncio
 
 from asyncio.events import AbstractEventLoop
-from aioredis import Redis
+from redis.asyncio import Redis
 
 logger = logging.getLogger('redis-ipc')
 
