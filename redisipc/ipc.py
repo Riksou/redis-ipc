@@ -204,7 +204,7 @@ class IPC:
                 required_identity = message.get('required_identity')
                 if op is None and sender != self.identity and nonce is not None and nonce in self.nonces:
                     future = self.nonces.get(nonce)
-                    if future:
+                    if future and future.done() is False:
                         future.set_result(data)
                     continue
 
