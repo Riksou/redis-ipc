@@ -51,7 +51,11 @@ class IPCMessage(_BaseIPCMessage):
 
 
 class IPCRouter:
-    pass
+    async def router_load(self) -> None:
+        pass
+
+    async def router_unload(self) -> None:
+        pass
 
 
 def random_hex(_bytes: int = 16) -> str:
@@ -73,6 +77,7 @@ class IPC:
         self.error_handler = error_handler
         self.loop = loop or asyncio.get_running_loop()
         self.channel = None
+        self.routers = []
         self.handlers: Dict[str, Handler] = {
             method.replace("handle_", ""): getattr(self, method)
             for method in dir(self)
@@ -84,6 +89,8 @@ class IPC:
         )
 
     def add_router(self, router: IPCRouter) -> None:
+        self.routers.append(router)
+
         for method in dir(router):
             if method.startswith("handle_"):
                 self.handlers[method.replace("handle_", "")] = getattr(router, method)
